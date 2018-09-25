@@ -115,7 +115,7 @@ AS
 	DECLARE @Count INT = 0;
  
     EXEC dbo.sub_proc @curs = @ext_curs OUTPUT;
- 
+	
     FETCH NEXT FROM @ext_curs INTO @t_user_login, @t_email, @t_age;
     PRINT 'First Fetch: "' + @t_user_login + ' | ' + @t_email + ' | ' +  CAST(@t_age AS VARCHAR) + '"'
 	PRINT '      Players:';
@@ -148,25 +148,37 @@ IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'dbo.get_FiveYearsAgoP
     DROP FUNCTION dbo.get_FiveYearsAgoPlayers
 GO
 
-CREATE functiON dbo.get_FiveYearsAgoPlayers()
+--CREATE functiON dbo.get_FiveYearsAgoPlayers()
 
-    RETURNS @tt TABLE
-    (	
-		user_login varchar(254),
-		email NVARCHAR(254),
-        donate_points int,
-        Age INT
-    )
-    AS
-    BEGIN
-        INSERT @tt
-            SELECT user_login, email, donate_points, dbo.get_age(YEAR(registration_date))
-            FROM Players
-            WHERE dbo.FiveYearsAgoTrue(dbo.get_age(YEAR(registration_date))) = 1
-        RETURN
-    END
+--    RETURNS @tt TABLE
+--    (	
+--		user_login varchar(254),
+--		email NVARCHAR(254),
+--        donate_points int,
+--        Age INT
+--    )
+--    AS
+--    BEGIN
+--        INSERT @tt
+--            SELECT user_login, email, donate_points, dbo.get_age(YEAR(registration_date))
+--            FROM Players
+--            WHERE dbo.FiveYearsAgoTrue(dbo.get_age(YEAR(registration_date))) = 1
+--        RETURN
+--    END
+--GO
+
+CREATE FUNCTION dbo.get_FiveYearsAgoPlayers()
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT user_login, email, donate_points, dbo.get_age(YEAR(registration_date)) AS age
+    FROM Players
+    WHERE dbo.FiveYearsAgoTrue(dbo.get_age(YEAR(registration_date))) = 1
+);
 GO
- 
+
+
 ALTER PROCEDURE dbo.sub_proc
     @curs CURSOR VARYING OUTPUT
 AS
@@ -192,3 +204,14 @@ END
 CLOSE @another_curs;
 DEALLOCATE @another_curs;
 GO
+
+
+
+
+
+
+
+
+
+
+

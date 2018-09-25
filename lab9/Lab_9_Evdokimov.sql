@@ -1,4 +1,4 @@
-
+ 
 --use master
 --go
 
@@ -29,7 +29,7 @@ GO
 CREATE TABLE Players
 	(
 	user_login varchar(20) PRIMARY KEY NOT NULL,
-	Email  varchar(254) NOT NULL ,
+	Email  varchar(254) NOT NULL UNIQUE,
 	status int NOT NULL DEFAULT 0
 	);
 GO
@@ -39,10 +39,10 @@ GO
 CREATE TABLE Characters
 	(
 	user_login varchar(20) REFERENCES Players(user_login) NOT NULL,
-	Nickname varchar(50) NOT NULL,
+	Nickname varchar(50) UNIQUE NOT NULL,
 	In_game_balance int NOT NULL,
 	Race varchar(10)  NOT NULL,
-	PRIMARY KEY(Nickname)
+	PRIMARY KEY(user_login)
 	);
 GO
 
@@ -64,21 +64,14 @@ INSERT INTO Characters(Nickname, in_game_balance, race, user_login)
 		('Blffiton', 2345 , 'Orc','frrride'),
 		('Metusosam', 7654765 , 'Human','Heqttt'),
 		('Avadon', 345697 , 'Human','Kathilla'),
-		('Ina', 98765 , 'Treant','Heqttt'),
 		('Tand', 0 , 'Murloc','agoonViper'),
-		('Nggely', 8765543 , 'Human','Kathilla'),
-		('Oning', 854 , 'Treant','agoonViper'),
-		('Lien', 78645123 , 'Human','Uesdemus'),
 		('Koshanerg', 255645198 , 'Ogre','Uesdemus'),
-		('Ghim', 8451 , 'Orc','Uesdemus'),
-		('Gralillo', 12554 , 'ELf','Kathilla'),
-		('Ullanchen', 0 , 'Human','agoonViper'),
 		('Zani', 3245867, 'Ogre','Hoenic'); 
 GO
 
 
 IF OBJECT_ID(N'Players_trigger_insert') is NOT NULL
-	DROP TRIGGER Players_trigger_insert;
+	DROP TRIGGER Players_trigger_inser¸t;
 GO
 
 CREATE TRIGGER Players_trigger_insert
@@ -174,17 +167,15 @@ CREATE TRIGGER Character_view_trigger_insert
 	AS
     BEGIN
         INSERT INTO Players
-			SELECT DISTINCT
+			SELECT
 			i.user_login,
 			i.email,
 			i.status
                 FROM inserted AS i
-                WHERE i.email not in (SELECT email
-                    FROM Players)
 		
         INSERT INTO Characters
             SELECT	
-                    (select User_login from Players as P where i.email = P.email),
+                    i.user_login,
 					i.nickname,
 					i.in_game_Balance,
 					i.race
@@ -201,8 +192,7 @@ GO
 
 insert into Character_view(user_login, email, Nickname, Race, in_game_balance, status)
 values
-    ( 'Drew', 'breussoippauprusso-3159@yopmail.com', 'Gideon', 'elf', 2352352, 1),
-	( 'Drew', 'breussoippauprusso-3159@yopmail.com', 'Gekko',  'murloc', 0, 1);
+    ( 'grew', 'bre4sso-3159@yopmail.com', 'Gideon', 'elf', 2352352, 1);
 GO
 
 SELECT * FROM Players;
@@ -253,21 +243,56 @@ create trigger Character_view_trigger_update
     as 
     begin
  
-        if UPDATE(user_login)
-            RAISERROR('[UPD TRIGGER]: "user_login"," cant be modified', 16, 1);
+       IF UPDATE(user_login)
+    BEGIN
+        RAISERROR('[UPD TRIGGER]: "user_login" can''t be modified', 16, 1);
+        RETURN;
+    END
+
+	IF UPDATE(nickname)
+    BEGIN
+        RAISERROR('[UPD TRIGGER]: "nickname" can''t be modified', 16, 1);
+        RETURN;
+    END
 		
-		if UPDATE(email)
-			RAISERROR('[UPD TRIGGER]: "email" cant be modified', 16, 1);
+
+					UPDATE Players
+			SET 
+			email = (select email from inserted where inserted.user_login = players.user_login),
+			status = (select status from inserted where inserted.user_login = players.user_login)
+						where players.user_login = (select user_login from inserted where inserted.user_login= Players.user_login)
+			
+			UPDATE Characters
+			set
+			in_game_balance = (select in_game_balance from inserted where inserted.Nickname = Characters.nickname),
+			race = (select race from inserted where inserted.Nickname = Characters.nickname)
+						where Characters.Nickname = (select Nickname from inserted where inserted.Nickname = Characters.Nickname)
+						
+					
+		
+			
 END
 go	
  
-update Character_view
-    Set user_login = 'hiiief', email = 'neimmeucafollo-4828@yopmail.com'
-		where user_login  = 'Uesdemus';
+ select * from Character_view 
+select * from Characters
 
-	
+
+	update Character_view
+		Set in_game_balance = 2281777, race = 'Human'
+		where Nickname = 'Gideon'
+		go
+
+
+
+update Character_view
+    Set email  = 'neimmeucafollo-4828@yopmail.com', status = 1
+		where user_login  = 'Uesdemus';
 GO
 
-
+update Character_view
+    Set user_login  = 'neimmeucafollo'
+		where user_login  = 'Uesdemus';
+GO
 select * from Character_view 
 select * from Characters

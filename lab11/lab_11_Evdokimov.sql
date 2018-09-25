@@ -44,7 +44,7 @@ GO
 CREATE TABLE Players
 	(
 	user_login varchar(20) PRIMARY KEY NOT NULL,
-	Email  varchar(254) NOT NULL,
+	Email  varchar(254) NOT NULL UNIQUE,
 	Password varchar(30) NOT NULL,
 	Donate_points int NOT NULL,
 	registration_date date NOT NULL,
