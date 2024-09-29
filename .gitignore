@@ -1,4 +1,5 @@
 .docx
+.gitignore
 lab*/
 !lab1/
 !lab2/
