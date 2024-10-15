@@ -57,11 +57,14 @@ CREATE TABLE Maps
 	)
 GO
 
+INSERT INTO Maps(map_name)
+VALUES ('ChinaTown'),
+('The Great Bridge'),
+('TheDarkTown');
+GO
+
 select * from sys.filegroups
 
-select * from Maps;
-select * from Players;
-GO
 
 ALTER DATABASE Lab5
 	MODIFY	FILEGROUP [primary] DEFAULT;
@@ -76,13 +79,17 @@ INTO dbo.Maps_copy
 FROM Maps  
 GO  
 
+drop table maps;
+go
+
+SELECT * FROM maps_copy
+GO
+
 alter database lab5
     remove file alter_lab5_dat
 	
 go
 
-drop table maps;
-go
 
 alter database lab5
     remove filegroup Lab5_filegroup;
@@ -90,9 +97,6 @@ go
 
 select * from sys.filegroups
 GO
---sp_help Maps;
---GO
---sp_help Players;
 
 
 CREATE SCHEMA Lab5_schema;
