@@ -1,38 +1,43 @@
-USE Lab1;
+USE master
 GO
 
-IF OBJECT_ID(N'Ordered_product') is NOT NULL
-	DROP TABLE Ordered_product;
+IF DB_ID(N'lab6') IS NOT NULL
+	DROP DATABASE lab6;
 GO
 
-IF OBJECT_ID(N'Product') is NOT NULL
-	DROP TABLE Product;
+CREATE DATABASE lab6
+ON (NAME = lab6_dat, FILENAME = "C:\BD\lab6\lab6dat.mdf",
+		SIZE = 10, MAXSIZE = UNLIMITED, FILEGROWTH = 5%)
+	LOG ON (NAME = lab6_log, FILENAME = "C:\BD\lab6\lab6log.ldf",
+		SIZE = 5MB, MAXSIZE = 25MB, FILEGROWTH = 5MB); 
 GO
 
-IF OBJECT_ID(N'Orders') is NOT NULL 
-	DROP TABLE Orders;
+USE lab6
+
+IF OBJECT_ID(N'Maps') is NOT NULL
+	DROP TABLE Maps;
 GO
 
-IF OBJECT_ID(N'CLients') is NOT NULL
-	DROP TABLE Clients;
+IF OBJECT_ID(N'Matches') IS NOT NULL
+	DROP TABLE matches;
 GO
 
-CREATE TABLE Clients
+IF OBJECT_ID(N'Players') IS NOT NULL
+	DROP TABLE Players;
+GO
+
+CREATE TABLE Maps 
 	(
-	Client_code int IDENTITY(1000, 1) PRIMARY KEY,
-	Name NVARCHAR(100) NOT NULL,
-	Address NVARCHAR(100) UNIQUE DEFAULT 'Unknown',
-	Phone_number NVARCHAR(10) UNIQUE NOT NULL,
-		CHECK (LEN(phone_number) = 10),
+	Map_code Int IDENTITY(1,1) PRIMARY KEY ,
+	Map_name VARCHAR(40) NOT NULL UNIQUE,
 	);
 GO
 
-INSERT INTO  Clients(Name, Address, Phone_number)
-   VALUES 
-	('Artem', '294060, Тульская область, город Зарайск, бульвар Ленина, 71', 9502422455),
-	('Yan', '783595, Волгоградская область, город Раменское, въезд Косиора, 40', 9083528814),
-	('Nastya', '336490, Читинская область, город Мытищи, шоссе Гагарина, 79', 9663241425),
-	('Anton','296543, Самарская область, город Солнечногорск, шоссе Чехова, 84', 9856759952);
+INSERT INTO Maps(map_name)
+	VALUES ('ChinaTown'),
+	('The Great Bridge'),
+	('TheDarkTown');
+GO
 
 GO
 -- Способ 1
@@ -45,175 +50,173 @@ SELECT @@IDENTITY;
 GO
 -- Способ 3
 
-SELECT IDENT_CURRENT('CLients');
+SELECT IDENT_CURRENT('Maps');
 GO
 -- Способ 4
-SELECT * FROM Clients;
+
+SELECT * FROM Maps;
 GO
 
-CREATE TABLE Orders
-	(
-	ID_of_order uniqueidentifier ROWGUIDCOL DEFAULT (newid()) PRIMARY KEY NOT NULL,
-	Number_of_order int IDENTITY UNIQUE,
-	Client_code int REFERENCES Clients(Client_code) NOT NULL,
-	Date_of_order date NOT NULL,
-	CONSTRAINT CHK_Date_of_order
-		CHECK (Date_of_order > CONVERT(DATETIME, '1/1/1990', 103)),
-	status NVARCHAR(20) DEFAULT 'Обрабатывается' NOT NULL,
-		CHECK (status IN('Обрабатывается','Обработан', 'Доставка', 'Выполнен')),
-	Comment NVARCHAR(100) DEFAULT 'Нет примечания',
+CREATE TABLE Matches
+(
+	Match_code uniqueidentifier ROWGUIDCOL DEFAULT (newid()) PRIMARY KEY NOT NULL,
+	Maps varchar(40) REFERENCES Maps(map_name) NOT NULL,
+	Match_duration time NOT NULL,
+	Game_mode varchar(15) NOT NULL,
+	_Date date DEFAULT getdate() NOT NULL,
+	CONSTRAINT CHK_Date
+		CHECK (_Date > CONVERT(DATE, '1/1/1990', 103)),
+	Result varchar(10) NOT NULL,
+	Balance_change int NOT NULL,
 	);
 GO
 
-
-INSERT INTO Orders(Client_code, Date_of_order, status, Comment)
-	VALUES
-	(1000, '22/11/2023', 'Обработан', 'Самовывоз'),
-	(1000, '18/09/2023', 'Выполнен', DEFAULT),
-	(1001, '23/11/2023', DEFAULT, 'До двери'),
-	(1002, '11/10/2023', 'Выполнен', DEFAULT),
-	(1003, '20/11/2023', 'Доставка', 'Срочный заказ');
+INSERT INTO Matches(maps, Match_duration, Game_mode, _Date, Result, Balance_change)
+	VALUES 
+	('The Great Bridge','00:09:52', 'Быстрый', '22/11/2023', 'Победа', +4255),
+	('ChinaTown','00:14:11', 'Рейтинговый', default, 'Поражение', -8765);
 GO
 
-SELECT * FROM Orders;
+SELECT * FROM Matches;
 GO
 
-SELECT Clients.Client_code, Name, Number_of_order, ID_of_order, status
-	FROM Clients, Orders WHERE Clients.Client_code = Orders.Client_code
+IF OBJECT_ID('PlayersSequence') IS NOT NULL
+    DROP SEQUENCE PlayersSequence;
 GO
 
-
-IF OBJECT_ID('ProductSequence') IS NOT NULL
-    DROP SEQUENCE ProductSequence;
-GO
-
-CREATE SEQUENCE ProductSequence
+CREATE SEQUENCE PlayersSequence
     START WITH 200003
     INCREMENT BY 738;
 GO
 
-CREATE TABLE Product
+CREATE TABLE Players
 	(
-	Item_number int DEFAULT (NEXT VALUE FOR ProductSequence) PRIMARY KEY,
-	Name_of_product NVARCHAR(80) UNIQUE NOT NULL,
-	QtyAvailable smallint,
-	Price money NOT NULL,
-		CHECK(Price > 0),
-	InventoryValue AS QtyAvailable * Price
+	PlayerID int DEFAULT (NEXT VALUE FOR PlayersSequence) UNIQUE,
+	user_login varchar(20) PRIMARY KEY NOT NULL,
+	Email  varchar(254) NOT NULL,
+	Password varchar(30) NOT NULL,
+	Donate_points int NOT NULL,
+	registration_date date NOT NULL,
+	CONSTRAINT CHK_registration_date
+		CHECK (registration_date > CONVERT(DATE, '1/1/1990', 103)),
     );
 GO
 
-INSERT INTO Product(Name_of_product, QtyAvailable, Price)
+INSERT INTO Players(user_login, email, password, donate_points, registration_date)
 	VALUES
-		('Apple', 0, 20),
-		('Banana', 100, 45),
-		('Milk', 124, 10),
-		('Watermelon', 80, 100); 
+		('Drew', 'breussoippauprusso-3159@yopmail.com', '-Hxe9ddAE8', 51, '12/07/2023'),
+		('Kathilla', 'leiyauhefraku-4167@yopmail.com', '-26eY_2bxX5', 0, '8/02/2023'),
+		('Uesdemus', 'bropreibonnedda-5770@yopmail.com', '-Ed8eORDn1', 9876, '30/09/2021'),
+		('Hoenic', 'fofiyannaje-7957@yopmail.com', '-927diQdOn', 22, '24/12/2022'); 
 GO
 
-SELECT * FROM Product;
+SELECT * FROM Players
 GO
 
-
-
-CREATE TABLE Ordered_product
+CREATE TABLE Characters
 	(
-	ID_of_order uniqueidentifier ROWGUIDCOL REFERENCES Orders(ID_of_order),
-	Item_Number int REFERENCES Product(Item_number),
-	Volume int NOT NULL,
-		CHECK(Volume > 0),
-	Total_price money NOT NULL DEFAULT 0,
-	PRIMARY KEY(ID_of_order, Item_number)
-	);
-
+	Nickname varchar(45) NOT NULL,
+	In_game_balance int NOT NULL,
+	Race varchar(10)  NOT NULL,
+	Last_login_date date NOT NULL,
+	registration_date date NOT NULL,
+	user_login varchar(20) REFERENCES Players(user_login) NOT NULL
+	PRIMARY KEY(Nickname, user_login)
+    );
 GO
-DECLARE 
-	@TypeID uniqueidentifier,
-	@TypeID_2 uniqueidentifier
 
-SELECT @TypeID=ID_of_order
-FROM Orders
-WHERE Number_of_order = 1
-
-SELECT @TypeID_2=ID_of_order
-FROM Orders
-WHERE Number_of_order = 2
-
-INSERT INTO Ordered_product(ID_of_order, Item_Number, Volume)
+INSERT INTO Characters(Nickname, in_game_balance, race, Last_login_date, registration_date, user_login)
 	VALUES
-		(@TypeID, 200003, 5),
-		(@TypeID_2, 200741, 13);
+		('Uetreyn', 236236326, 'Elf', '12/07/2023','12/07/2023','Drew'),
+		('Blffiton', 2345 , 'Orc','8/02/2023','12/07/2023','Drew'),
+		('Arian', 622637 , 'Human','30/09/2021','12/07/2023','Kathilla'),
+		('Zani', 3245867, 'Ogre','24/12/2022','12/07/2023','Hoenic'); 
 GO
 
-UPDATE Ordered_product
-SET Total_price = product.price * Volume
-FROM Product
-WHERE Product.Item_number = Ordered_product.Item_Number
-GO
-
-
-SELECT * FROM Ordered_product
+SELECT * FROM Characters
 GO
 
 
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT Item_number_FK FOREIGN KEY(item_number) REFERENCES Product(Item_number) ON DELETE CASCADE;
+ALTER TABLE Players
+ADD CONSTRAINT FK_Characters_UserLogin
+FOREIGN KEY(user_login)
+REFERENCES Players(user_login)
+ON DELETE NO ACTION;
 
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT ID_of_order_FK FOREIGN KEY(ID_of_order) REFERENCES Orders(ID_of_order) ON DELETE CASCADE;
---GO
-
---DELETE FROM Product 
---WHERE Item_number = 200003;
---GO
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT Item_number_FK ;
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT ID_of_order_FK;
-
---GO
-
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT Item_number_FK FOREIGN KEY(item_number) REFERENCES Product(Item_number) ON DELETE SET NULL;
-
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT ID_of_order_FK FOREIGN KEY(ID_of_order) REFERENCES Orders(ID_of_order) ON DELETE SET NULL;
-
---GO
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT Item_number_FK ;
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT ID_of_order_FK;
-
---GO
-
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT Item_number_FK FOREIGN KEY(item_number) REFERENCES Product(Item_number) ON DELETE SET DEFAULT;
-
---ALTER TABLE Ordered_product
---	ADD CONSTRAINT ID_of_order_FK FOREIGN KEY(ID_of_order) REFERENCES Orders(ID_of_order) ON DELETE SET DEFAULT;
-
---GO
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT Item_number_FK ;
-
---ALTER TABLE Ordered_product
---	DROP CONSTRAINT ID_of_order_FK;
-
---GO
+--попытка удалить игрока приведет к ошибке, так как у него есть связанные персонажи
+DELETE FROM Players
+WHERE user_login = 'Drew';
 
 
---DELETE FROM PRODUCT 
---WHERE item_number = 200003
---GO
 
---SELECT * FROM PRODUCT;
---GO
 
---SELECT * FROM Ordered_product
---GO
+UPDATE Players
+SET Email = 'newemail@yopmail.com'
+WHERE user_login = 'Drew';
+
+ALTER TABLE Players
+	DROP CONSTRAINT FK_Characters_UserLogin;
+GO
+
+ALTER TABLE Characters
+ADD CONSTRAINT FK_Characters_UserLogin
+FOREIGN KEY(user_login)
+REFERENCES players(user_login)
+ON DELETE CASCADE;
+
+--при удалении игрока будут автоматически удалены все его персонажи
+DELETE FROM Players
+WHERE user_login = 'Hoenic';
+
+
+
+UPDATE Characters
+SET In_game_balance = 100
+WHERE Nickname = 'Arian';
+
+ALTER TABLE Characters
+	DROP CONSTRAINT FK_Characters_UserLogin;
+
+GO
+
+
+
+ALTER TABLE characters
+ADD CONSTRAINT FK_Characters_UserLogin
+FOREIGN KEY(user_login)
+REFERENCES Players(user_login)
+ON DELETE SET NULL;
+
+--при удалении игрока поле user_login в таблице Characters юудет ошибка из-за ограничения NOT NULL
+DELETE FROM Players
+WHERE user_login = 'Kathilla';
+
+
+UPDATE Players
+SET Email = NULL
+WHERE user_login = 'Drew';
+
+ALTER TABLE Characters
+	DROP CONSTRAINT FK_Characters_UserLogin;
+
+GO
+
+ALTER TABLE Characters
+ADD CONSTRAINT FK_Characters_UserLogin
+FOREIGN KEY(user_login)
+REFERENCES Players(user_login)
+ON DELETE SET DEFAULT;
+
+--при удалении игрока поле user_login в таблице Characters будет выводиться ошибка, так как значения по дефолту нету -> NULL, но ограничение NOT NULL
+DELETE FROM Players
+WHERE user_login = 'Kathilla';
+
+
+UPDATE Players
+SET Donate_points = DEFAULT
+WHERE user_login = 'Drew';
+
+
+
+
+
