@@ -1,51 +1,65 @@
-USE lab1;
+--use master
+--go
+
+--IF DB_ID(N'lab8') IS NOT NULL
+--	DROP DATABASE lab8;
+--GO
+
+--CREATE DATABASE lab8
+--ON (NAME = lab8_dat, FILENAME = "C:\BD\lab8\lab8dat.mdf",
+--		SIZE = 10, MAXSIZE = UNLIMITED, FILEGROWTH = 5%)
+--	LOG ON (NAME = lab8_log, FILENAME = "C:\BD\lab7\lab8log.ldf",
+--		SIZE = 5MB, MAXSIZE = 25MB, FILEGROWTH = 5MB); 
+--GO
+
+use lab8
+go
+
+
+IF OBJECT_ID(N'Players') is NOT NULL
+	DROP TABLE Players;
 GO
 
-
-IF OBJECT_ID(N'CLients') is NOT NULL
-	DROP TABLE Clients;
+IF OBJECT_ID('PlayersSequence') IS NOT NULL
+    DROP SEQUENCE PlayersSequence;
 GO
 
-CREATE TABLE Clients
+CREATE SEQUENCE PlayersSequence
+    START WITH 200003
+    INCREMENT BY 738;
+GO
+
+CREATE TABLE Players
 	(
-	Client_code INT IDENTITY(244244, 414) PRIMARY KEY,
-	Name VARCHAR(100) NOT NULL,
-	Birthday DATE NOT NULL,
-	CONSTRAINT CHK_Date_of_order
-		CHECK (Birthday > CONVERT(DATETIME, '1/1/1900', 104)),
-	Address VARCHAR(100) UNIQUE DEFAULT 'Unknown',
-	Phone_number VARCHAR(10) UNIQUE NOT NULL,
-		CHECK (LEN(phone_number) = 10),
+	PlayerID int DEFAULT (NEXT VALUE FOR PlayersSequence) UNIQUE,
+	user_login varchar(20) PRIMARY KEY NOT NULL,
+	Email  varchar(254) NOT NULL,
+	Password varchar(30) NOT NULL,
+	Donate_points int NOT NULL,
+	registration_date date NOT NULL,
+	CONSTRAINT CHK_registration_date
+		CHECK (registration_date > CONVERT(DATE, '1/1/1990', 103)),
 	);
 GO
 
-INSERT INTO  Clients(Name, Birthday ,Address, PhONe_number)
-   VALUES 
-	('Artem', '20/05/1995', '294060,  Тульская область, город Зарайск, бульвар Ленина, 71', 9502422455),
-	('Yan', '5/08/2004', '783595, Волгоградская область, город Раменское, въезд Косиора, 40', 9083528814),
-	('NAStya', '24/12/1976', '336490, Читинская область, город Мытищи, шоссе Гагарина, 79', 9663241425),
-	('AntON', '18/07/2000','296543, Самарская область, город Солнечногорск, шоссе Чехова, 84', 9856759952),
-	('Ivan', '15/07/1995', '712297, Липецкая область, город Можайск, бульвар Гоголя, 16', 9155225255),
-	('Natalia', '23/09/1989', '704096, Саратовская область, город Талдом, спуск Сталина, 81', 9234567890),
-	('Alexei', '10/02/2001', '373356, Оренбургская область, город Солнечногорск, наб. Бухарестская, 24', 9345678901),
-	('Elena', '05/11/2010', '899790, Белгородская область, город Озёры, пер. Будапештсткая, 61', 9456789012),
-	('Svetlana', '20/04/2008', '968414, Тюменская область, город Ногинск, проезд Косиора, 54', 9567890123),
-	('Dmitri', '30/12/1988', '977756, Ульяновская область, город Раменское, въезд Сталина, 04', 9678901234),
-	('Anna', '02/03/1977', '267232, Смоленская область, город Сергиев Посад, въезд Гоголя, 91', 9789012345),
-	('Sergei', '18/08/2006', '380438, Тюменская область, город Орехово-Зуево, шоссе Ломоносова, 31', 9890123456),
-	('Yelena', '09/06/2004', '965678, Тамбовская область, город Домодедово, пл. Балканская, 60', 9901234567),
-	('Maxim', '14/10/1991', '367833, Брянская область, город Егорьевск, пер. Бухарестская, 02', 9012345678),
-	('Tatiana', '07/12/2007', '446162, Иркутская область, город Кашира, проезд 1905 года, 56', 9123456789),
-	('Vladimir', '22/05/1980', '068728, Нижегородская область, город Красногорск, спуск Бухарестская, 46', 9234523590);
+INSERT INTO Players(user_login, email, password, donate_points, registration_date)
+	VALUES
+		('Drew', 'breussoippauprusso-3159@yopmail.com', 'dAE8', 51, '12/07/2023'),
+		('Kathilla', 'leiyauhefraku-4167@yopmail.com', '-26eY_2bxX5', 0, '8/02/2023'),
+		('Uesdemus', 'bropreibonnedda-5770@yopmail.com', '-Ed8eORDn1', 9876, '30/09/2016'),
+		('Hoenic', 'fofiyannaje-7957@yopmail.com', '-927diQdOn', 22, '24/12/2022'),
+		('frrride', 'aghjaje-1457@yopmail.com', '-hd27dhre63n', 13452, '12/05/2023'),
+		('agoonViper', 'jhgfdnnaje-75367757@yopmail.com', '-97654gOn', 2532, '20/10/2018'),
+		('Heqttt', 'fofiyannaje-2155@yopmail.com', '-9iQdOn', 22522, '11/02/2019'); 
 GO
 
-SELECT * FROM Clients;
+SELECT * FROM Players;
 GO
 
 if OBJECT_ID(N'get_age', 'FN') is not null
     DROP FUNCTION get_age;
 GO
-CREATE FUNCTION get_age(@birthday INT)
+CREATE FUNCTION get_age(@createDate int)
     RETURNS INT
     WITH EXECUTE AS CALLER
     AS
@@ -54,23 +68,23 @@ CREATE FUNCTION get_age(@birthday INT)
         DECLARE @current_year INT, @age INT;
  
         SET @current_year = YEAR(@current_date);
-        SET @age = @current_year - @birthday;
+        SET @age = @current_year - @createDate;
     
         RETURN @age;
     END
 GO
 
-IF OBJECT_ID(N'FullAgeTrue', N'FN') is not null
-    DROP FUNCTION dbo.FullAgeTrue;
+IF OBJECT_ID(N'FiveYearsAgoTrue', N'FN') is not null
+    DROP FUNCTION dbo.FiveYearsAgoTrue;
 GO
-CREATE FUNCTION dbo.FullAgeTrue(@compare_what INT)
+CREATE FUNCTION dbo.FiveYearsAgoTrue(@compare_what INT)
     RETURNS INT
     WITH EXECUTE AS CALLER
     AS
     BEGIN
         DECLARE @answ INT;
  
-       IF (@compare_what > 18)
+       IF @compare_what >= 5
             SET @answ = 1;
         ELSE 
             SET @answ = 0;
@@ -79,7 +93,7 @@ CREATE FUNCTION dbo.FullAgeTrue(@compare_what INT)
     END
 GO
  
-if OBJECT_ID(N'ClientsFullAge', N'P') is not null
+if OBJECT_ID(N'dbo.sub_proc', N'P') is not null
     DROP PROCEDURE dbo.sub_proc 
 GO
 
@@ -89,14 +103,14 @@ AS
     SET NOCOUNT ON;
     SET @curs = CURSOR
     SCROLL STATIC FOR               
-        SELECT client_code, name, dbo.get_age(YEAR(birthday)) 
-        FROM Clients;
+        SELECT user_login, email, dbo.get_age(YEAR(registration_date)) 
+        FROM Players;
     OPEN @curs;
 GO
 
-----Создать хранимую процедуру, вызывающую процедуру п.1., 
-----осуществляющую прокрутку возвращаемого курсора и выводящую сообщения, 
-----сформированные из записей при выполнении условия, заданного еще одной пользовательской функцией.
+--Создать хранимую процедуру, вызывающую процедуру п.1., 
+--осуществляющую прокрутку возвращаемого курсора и выводящую сообщения, 
+--сформированные из записей при выполнении условия, заданного еще одной пользовательской функцией.
  
 if OBJECT_ID(N'dbo.external_proc', N'P') is not null
     DROP PROCEDURE dbo.external_proc
@@ -104,29 +118,29 @@ GO
 CREATE PROCEDURE dbo.external_proc
 AS
     DECLARE @ext_curs CURSOR;
-    DECLARE @t_client_Code VARCHAR(254);
-    DECLARE @t_name VARCHAR(35);
+    DECLARE @t_user_login VARCHAR(254);
+    DECLARE @t_email VARCHAR(35);
     DECLARE @t_age INT;
 	DECLARE @Count INT = 0;
  
     EXEC dbo.sub_proc @curs = @ext_curs OUTPUT;
  
-    FETCH NEXT FROM @ext_curs INTO @t_client_code, @t_name, @t_age;
-    PRINT 'First Fetch: "' + @t_client_code + '| ' + @t_name + '"'
-	PRINT '      FullAge clients:';
+    FETCH NEXT FROM @ext_curs INTO @t_user_login, @t_email, @t_age;
+    PRINT 'First Fetch: "' + @t_user_login + ' | ' + @t_email + ' ||| ' +  CAST(@t_age AS VARCHAR) + '"'
+	PRINT '      Players:';
 	PRINT '-----------------------------'
     WHILE (@@FETCH_STATUS = 0)
     BEGIN
-        IF (dbo.FullAgeTrue(@t_age) = 1)
+        IF (dbo.FiveYearsAgoTrue(@t_age) = 1)
 		BEGIN
-            PRINT @t_client_code + ' | ' + @t_name + ' is FullAge(' + CAST(@t_age AS VARCHAR) + ')'
+            PRINT @t_user_login + ' | ' + @t_email + ' | 5-ти летний герой | На проекте уже(' + CAST(@t_age AS VARCHAR) + ')'
 			SET @Count = @Count + 1
 		END
         FETCH NEXT FROM @ext_curs
-        INTO @t_client_code, @t_name, @t_age;
+        INTO @t_user_login, @t_email, @t_age;
     END
 	PRINT '-----------------------------'
-	PRINT 'Total FullAge clients is ' + CAST(@Count AS VARCHAR);
+	PRINT 'Total Players with 5years ' + CAST(@Count AS VARCHAR);
     CLOSE @ext_curs;
     DEALLOCATE @ext_curs;
 GO
@@ -138,26 +152,26 @@ GO
 --Модифицировать хранимую процедуру п.2. таким образом, 
 --чтобы выборка формировалась с помощью табличной функции.
  
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'dbo.get_FullAgeClient') 
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(N'dbo.get_FiveYearsAgoPlayers') 
     AND xtype IN (N'FN', N'IF', N'TF'))
-    DROP FUNCTION dbo.get_FullAgeClient
+    DROP FUNCTION dbo.get_FiveYearsAgoPlayers
 GO
 
-CREATE functiON dbo.get_FullAgeClient()
+CREATE functiON dbo.get_FiveYearsAgoPlayers()
 
     RETURNS @tt TABLE
     (	
-		ClientCode INT,
-		Name NVARCHAR(20),
-        Address NVARCHAR(254),
+		user_login varchar(254),
+		email NVARCHAR(254),
+        donate_points int,
         Age INT
     )
     AS
     BEGIN
         INSERT @tt
-            SELECT Client_code, Name, Address, dbo.get_age(YEAR(birthday))
-            FROM Clients
-            WHERE dbo.FullAgeTrue(dbo.get_age(YEAR(birthday))) = 1
+            SELECT user_login, email, donate_points, dbo.get_age(YEAR(registration_date))
+            FROM Players
+            WHERE dbo.FiveYearsAgoTrue(dbo.get_age(YEAR(registration_date))) = 1
         RETURN
     END
 GO
@@ -169,8 +183,8 @@ BEGIN
     SET NOCOUNT ON;
     SET @curs = CURSOR
     SCROLL STATIC FOR
-        SELECT ClientCode, Name, Address, Age
-        FROM dbo.get_FullAgeClient();
+        SELECT user_login, email, donate_points, Age
+        FROM dbo.get_FiveYearsAgoPlayers();
     OPEN @curs;
 END
 GO
