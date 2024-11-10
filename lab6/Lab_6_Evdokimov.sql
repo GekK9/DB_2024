@@ -1,30 +1,37 @@
 USE master
 GO
 
-IF DB_ID(N'lab6') IS NOT NULL
-	DROP DATABASE lab6;
-GO
+--IF DB_ID(N'lab6') IS NOT NULL
+--	DROP DATABASE lab6;
+--GO
 
-CREATE DATABASE lab6
-ON (NAME = lab6_dat, FILENAME = "C:\BD\lab6\lab6dat.mdf",
-		SIZE = 10, MAXSIZE = UNLIMITED, FILEGROWTH = 5%)
-	LOG ON (NAME = lab6_log, FILENAME = "C:\BD\lab6\lab6log.ldf",
-		SIZE = 5MB, MAXSIZE = 25MB, FILEGROWTH = 5MB); 
-GO
+--CREATE DATABASE lab6
+--ON (NAME = lab6_dat, FILENAME = "C:\BD\lab6\lab6dat.mdf",
+--		SIZE = 10, MAXSIZE = UNLIMITED, FILEGROWTH = 5%)
+--	LOG ON (NAME = lab6_log, FILENAME = "C:\BD\lab6\lab6log.ldf",
+--		SIZE = 5MB, MAXSIZE = 25MB, FILEGROWTH = 5MB); 
+--GO
 
 USE lab6
-
-IF OBJECT_ID(N'Maps') is NOT NULL
-	DROP TABLE Maps;
-GO
 
 IF OBJECT_ID(N'Matches') IS NOT NULL
 	DROP TABLE matches;
 GO
 
+IF OBJECT_ID(N'Maps') is NOT NULL
+	DROP TABLE Maps;
+GO
+
+IF OBJECT_ID(N'Characters') IS NOT NULL
+	DROP TABLE Characters;
+GO
+
 IF OBJECT_ID(N'Players') IS NOT NULL
 	DROP TABLE Players;
 GO
+
+
+
 
 CREATE TABLE Maps 
 	(
@@ -142,10 +149,12 @@ ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES Players(user_login)
 ON DELETE NO ACTION;
+GO
 
 --попытка удалить игрока приведет к ошибке, так как у него есть связанные персонажи
 DELETE FROM Players
 WHERE user_login = 'Drew';
+GO
 
 
 
@@ -153,6 +162,7 @@ WHERE user_login = 'Drew';
 UPDATE Players
 SET Email = 'newemail@yopmail.com'
 WHERE user_login = 'Drew';
+GO
 
 ALTER TABLE Players
 	DROP CONSTRAINT FK_Characters_UserLogin;
@@ -163,16 +173,19 @@ ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES players(user_login)
 ON DELETE CASCADE;
+GO
 
 --при удалении игрока будут автоматически удалены все его персонажи
 DELETE FROM Players
 WHERE user_login = 'Hoenic';
+GO
 
 
 
 UPDATE Characters
 SET In_game_balance = 100
 WHERE Nickname = 'Arian';
+GO
 
 ALTER TABLE Characters
 	DROP CONSTRAINT FK_Characters_UserLogin;
@@ -186,15 +199,17 @@ ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES Players(user_login)
 ON DELETE SET NULL;
+GO
 
---при удалении игрока поле user_login в таблице Characters юудет ошибка из-за ограничения NOT NULL
+--при удалении игрока поле user_login в таблице Players юудет ошибка из-за ограничения NOT NULL
 DELETE FROM Players
 WHERE user_login = 'Kathilla';
-
+GO
 
 UPDATE Players
 SET Email = NULL
 WHERE user_login = 'Drew';
+GO
 
 ALTER TABLE Characters
 	DROP CONSTRAINT FK_Characters_UserLogin;
@@ -206,16 +221,16 @@ ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES Players(user_login)
 ON DELETE SET DEFAULT;
-
+GO
 --при удалении игрока поле user_login в таблице Characters будет выводиться ошибка, так как значения по дефолту нету -> NULL, но ограничение NOT NULL
 DELETE FROM Players
 WHERE user_login = 'Kathilla';
-
+GO
 
 UPDATE Players
 SET Donate_points = DEFAULT
 WHERE user_login = 'Drew';
-
+GO
 
 
 
