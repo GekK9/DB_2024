@@ -3,131 +3,128 @@ GO
 USE Lab15_1
 GO
 
-IF OBJECT_ID(N'Supplier') is NOT NULL
-	DROP TABLE Supplier
+IF OBJECT_ID(N'Players') is NOT NULL
+	DROP TABLE Players;
+GO
+
+CREATE TABLE Players
+	(
+	user_login varchar(20) PRIMARY KEY NOT NULL,
+	Email  varchar(254) NOT NULL UNIQUE,
+	status int NOT NULL DEFAULT 0
+	);
 GO
 
 
-
-CREATE TABLE Supplier (
-	Supplier_code INT NOT NULL PRIMARY KEY,
-	Address VARCHAR(100) NOT NULL,
-	Phone CHAR(11) NOT NULL UNIQUE,
-		CHECK (LEN(Phone) = 11),
-)
+INSERT INTO Players(user_login, email, status)
+	VALUES
+		('Drew', 'breussoippauprusso-3159@yopmail.com',1),
+		('Kathilla', 'leiyauhefraku-4167@yopmail.com',0),
+		('Uesdemus', 'bropreibonnedda-5770@yopmail.com',1),
+		('Hoenic', 'fofiyannaje-7957@yopmail.com', 1),
+		('frrride', 'aghjaje-1457@yopmail.com', 1),
+		('agoonViper', 'jhgfdnnaje-75367757@yopmail.com', 0),
+		('Heqttt', 'nowizeitretu-6395@yopmail.com', 1); 
 GO
 
-INSERT INTO  Supplier(supplier_code, Address, Phone)
-   VALUES 
-	(1,'641533, Орловская область, город Можайск, бульвар Домодедовская, 23','89152052653'),
-	(2,'350334, Волгоградская область, город Балашиха, шоссе Сталина, 79','89820152345'),
-	(3,'241983, Читинская область, город Люберцы, въезд Гоголя, 43','89872526828'),
-	(4,'466485, Магаданская область, город Волоколамск, пл. Ленина, 39','89876578877'),
-	(5,'463061, Иркутская область, город Луховицы, пл. Ладыгина, 63','89512481411'),
-	(6,'250211, Ярославская область, город Мытищи, проезд Ленина, 11','89242621734')
+IF OBJECT_ID(N'PlayersDel') is NOT NULL
+	DROP TRIGGER PlayersDel
 GO
 
-IF OBJECT_ID(N'SupplierDel') is NOT NULL
-	DROP TRIGGER SupplierDel
-GO
-
-CREATE TRIGGER SupplierDel
-    ON Supplier
+CREATE TRIGGER PlayersDel
+    ON Players
     AFTER DELETE AS
 BEGIN
-    DELETE FROM [Lab15_2].[dbo].Product WHERE supplier_code IN (SELECT Supplier_code FROM deleted)
+    DELETE FROM [Lab15_2].[dbo].Characters WHERE user_login IN (SELECT user_login FROM deleted)
 END
 GO
 
-IF OBJECT_ID(N'SupplierUpd') is NOT NULL
-	DROP TRIGGER SupplierUpd
+IF OBJECT_ID(N'PlayersUpd') is NOT NULL
+	DROP TRIGGER PlayersUpd
 GO
 
-CREATE TRIGGER SupplierUpd
-ON Supplier
+CREATE TRIGGER PlayersUpd
+ON Players
 INSTEAD OF UPDATE AS
 BEGIN
-	IF UPDATE(supplier_code)
+	IF UPDATE(user_login)
 	BEGIN
-		RAISERROR('[UPD TRIGGER]: Supplier_code cant upd', 15, -1);
+		RAISERROR('[UPD TRIGGER]: user_login cant upd', 15, -1);
 	END
-	ELSE 
-	BEGIN
-		IF UPDATE(Phone)
+		IF UPDATE(email)
 		BEGIN
-			UPDATE Supplier
-			SET Phone = (SELECT Phone FROM inserted WHERE inserted.Supplier_code = Supplier.Supplier_code)
-			WHERE Supplier_code = (SELECT Supplier_code FROM inserted WHERE inserted.Supplier_code = Supplier.Supplier_code);
+			UPDATE Players
+			SET email = (SELECT email FROM inserted WHERE inserted.user_login = Players.user_login)
+			WHERE user_login = (SELECT user_login FROM inserted WHERE inserted.user_login = Players.user_login);
 		END
-
-		IF UPDATE(address)
-		BEGIN
-			UPDATE Supplier
-			SET address = (SELECT address FROM inserted WHERE inserted.Supplier_code = Supplier.Supplier_code)
-			WHERE Supplier_code = (SELECT Supplier_code FROM inserted WHERE inserted.Supplier_code = Supplier.Supplier_code);
-		END
-	END
-END;
+	END;
 GO
 
 
 
-select * from Supplier
+select * from Players
 go
-update Supplier set PHONE = PHONE
+update Players set email = email
 go
-select * from Supplier
+select * from Players
 go
 
 
 USE Lab15_2
 GO
 
-IF OBJECT_ID(N'Product') is NOT NULL
-	DROP TABLE Product
+IF OBJECT_ID(N'Characters') is NOT NULL
+	DROP TABLE Characters
 GO
 
-CREATE TABLE Product (
-	Item_Number INT NOT NULL PRIMARY KEY,
-	Name_of_product VARCHAR(50) NOT NULL,
-	Price money NOT NULL,
-		CHECK (price > 0),
-	Supplier_code INT
-)
+CREATE TABLE Characters
+	(
+	Nickname varchar(50) NOT NULL primary key,
+	In_game_balance int NOT NULL,
+	Race varchar(10)  NOT NULL,
+	user_login varchar(20)
+	);
 GO
 
-INSERT Product VALUES
-	(1,'Milk', 60, 1),
-	(2,'Сheese', 100, 1),
-	(3,'Chocolate', 70, 2),
-	(4,'Bread', 40, 3),
-	(5,'Potato', 20, 4),
-	(6,'Eggs', 120, 6),
-	(7,'Bananas', 140, 5);
-
+INSERT INTO Characters(Nickname, in_game_balance, race, user_login)
+	VALUES
+		('Uetreyn', 236236326, 'Elf','Drew'),
+		('Blffiton', 2345 , 'Orc','frrride'),
+		('Metusosam', 7654765 , 'Human','Heqttt'),
+		('Avadon', 345697 , 'Human','Kathilla'),
+		('Ina', 98765 , 'Treant','Heqttt'),
+		('Tand', 0 , 'Murloc','agoonViper'),
+		('Nggely', 8765543 , 'Human','Kathilla'),
+		('Oning', 854 , 'Treant','agoonViper'),
+		('Lien', 78645123 , 'Human','Uesdemus'),
+		('Koshanerg', 255645198 , 'Ogre','Uesdemus'),
+		('Ghim', 8451 , 'Orc','Uesdemus'),
+		('Gralillo', 12554 , 'ELf','Kathilla'),
+		('Ullanchen', 0 , 'Human','agoonViper'),
+		('Zani', 3245867, 'Ogre','Hoenic'); 
 GO
 
-CREATE TRIGGER ProductIns
-    ON Product
+CREATE TRIGGER CharactersIns
+    ON Characters
     INSTEAD OF INSERT AS
 BEGIN
-    IF EXISTS(SELECT Item_Number FROM inserted WHERE inserted.Item_Number IN (SELECT Item_Number FROM [lab15_2].DBO.Product))
+    IF EXISTS(SELECT Nickname FROM inserted WHERE inserted.Nickname IN (SELECT Nickname FROM [lab15_2].DBO.Characters))
 		BEGIN
-            RAISERROR('[INS TRIGGER]: Product is already available', 11, 1)
+            RAISERROR('[INS TRIGGER]: Characters is already available', 11, 1)
 		END
 	ELSE BEGIN
-			IF EXISTS (SELECT item_number FROM inserted WHERE Supplier_code NOT IN (SELECT Supplier_code FROM [lab15_1].[dbo].Supplier))
+			IF EXISTS (SELECT Nickname FROM inserted WHERE user_login NOT IN (SELECT user_login FROM [lab15_1].[dbo].Players))
 			BEGIN
-				RAISERROR('[INS TRIGGER]: first add supplier', 11, 1)
+				RAISERROR('[INS TRIGGER]: first add Players', 11, 1)
 				END
 			ELSE 
 				BEGIN
-					INSERT INTO Product
+					INSERT INTO Characters
 						SELECT
-							i.Item_Number,
-							i.name_of_product,
-							i.price,
-							i.supplier_code
+							i.Nickname,
+							i.In_game_balance,
+							i.race,
+							i.user_login
 							FROM inserted AS i
 		END	
 		END
@@ -136,88 +133,86 @@ END
 GO
 
 
-IF OBJECT_ID(N'ProductUpd') is NOT NULL
-	DROP TRIGGER ProductUpd
+IF OBJECT_ID(N'CharactersUpd') is NOT NULL
+	DROP TRIGGER CharactersUpd
 GO
 
 
-CREATE TRIGGER ProductUpd
-	ON Product
+CREATE TRIGGER CharactersUpd
+	ON Characters
 INSTEAD OF UPDATE AS
 	BEGIN
-	 IF UPDATE(Supplier_code)
-		RAISERROR('[UPD TRIGGER]: Supplier_code cant upd', 15, -1)
-	 ELSE IF UPDATE(Price)
-		UPDATE Product
-		Set price = (select Price from inserted where inserted.Supplier_code = Supplier_code)
-										where Supplier_code = (select Supplier_code from inserted where inserted.Supplier_code = Supplier_code)
+	 IF UPDATE(user_login)
+		RAISERROR('[UPD TRIGGER]: user_login cant upd', 15, -1)
+	 ELSE IF UPDATE(in_game_balance)
+		UPDATE Characters
+		Set In_game_balance = (select In_game_balance from inserted where inserted.user_login = user_login)
+										where user_login = (select user_login from inserted where inserted.user_login = user_login)
 	END
 GO
 
-select * from Product
-update Product set Supplier_code = 1000
-select * from Product
+select * from Characters
+update Characters set user_login = 'sssooe'
+
+select * from Characters
 
 
 USE lab15_3
 GO
 
-IF OBJECT_ID(N'SuppliersProducts') is NOT NULL
-	DROP VIEW SuppliersProducts
+IF OBJECT_ID(N'PlayersCharacters') is NOT NULL
+	DROP VIEW PlayersCharacters
 GO
 
-CREATE VIEW SuppliersProducts
+CREATE VIEW PlayersCharacters
 AS
-  SELECT  S.Supplier_code, S.Address, P.Item_Number, P.Name_of_product,p.Price
-  FROM [lab15_1].[dbo].Supplier AS S INNER JOIN [lab15_2].[dbo].Product P on S.Supplier_code = P.Supplier_code
+  SELECT  S.user_login, S.email, P.Nickname, P.Race,p.In_game_balance
+  FROM [lab15_1].[dbo].Players AS S INNER JOIN [lab15_2].[dbo].Characters P on S.user_login = P.user_login
 GO
 
 
-SELECT * FROM SuppliersProducts
+SELECT * FROM PlayersCharacters
 
-SELECT * FROM [Lab15_1].[DBO].Supplier
+SELECT * FROM [Lab15_1].[DBO].Players
 
-SELECT * FROM [Lab15_2].[DBO].Product
+SELECT * FROM [Lab15_2].[DBO].Characters
 GO
 
 
-UPDATE [Lab15_1].[DBO].Supplier
-	SET Supplier_code = 8
-		where Supplier_code = 4
+UPDATE [Lab15_1].[DBO].Players
+	SET user_login = 'reazon'
+		where user_login = 'agoonViper'
 GO
 
-UPDATE [Lab15_1].[DBO].Supplier
-	SET Phone = '89856736695'
-		where Supplier_code = 4;
-GO
-UPDATE [LAB15_1].[DBO].Supplier
-	SET Address = '466485, Магаданская область, город Волоколамск, пл. Ленина, 39'
-		where Supplier_code = 2
-	GO
-UPDATE [Lab15_1].[DBO].Supplier
-	SET Phone = '89152052623', Supplier_code = 4
-		where Supplier_code = 5;
+UPDATE [Lab15_1].[DBO].Players
+	SET email = 'ghhhff43@gmail.com'
+		where user_login = 'agoonViper';
 GO
 
-INSERT [LAB15_2].[DBO].Product
+UPDATE [Lab15_1].[DBO].Players
+	SET email = 'g345543@gmail.com', user_login = 'kitok'
+		where user_login = 'frrride';
+GO
+
+INSERT [LAB15_2].[DBO].Characters
 VALUES
-		(8, 'Milk', 50, 6)
+		('hiiir', 236236326, 'Elf','Drew')
 GO
 
-INSERT [LAB15_2].[DBO].Product
+INSERT [LAB15_2].[DBO].Characters
 VALUES
-		(3, 'Milk', 50, 6)
+		('Uetreyn', 236236326, 'Orc','Drew')
 GO
 
-INSERT [LAB15_2].[DBO].Product
+INSERT [LAB15_2].[DBO].Characters
 VALUES
-		(9, 'Milk', 50, 7)
+		('Uetreyn', 236236326, 'Elf','frrride')
 GO
 
 
-SELECT * FROM SuppliersProducts
+SELECT * FROM PlayersCharacters
 
-SELECT * FROM [Lab15_1].[DBO].Supplier
+SELECT * FROM [Lab15_1].[DBO].Players
 
-SELECT * FROM [Lab15_2].[DBO].Product
+SELECT * FROM [Lab15_2].[DBO].Characters
 GO
