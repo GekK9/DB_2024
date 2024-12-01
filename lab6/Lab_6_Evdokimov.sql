@@ -99,8 +99,8 @@ GO
 CREATE TABLE Players
 	(
 	PlayerID int DEFAULT (NEXT VALUE FOR PlayersSequence) UNIQUE,
-	user_login varchar(20) PRIMARY KEY NOT NULL,
-	Email  varchar(254) NOT NULL,
+	user_login varchar(20) PRIMARY KEY,
+	Email  varchar(254),
 	Password varchar(30) NOT NULL,
 	Donate_points int NOT NULL,
 	registration_date date NOT NULL,
@@ -117,8 +117,6 @@ INSERT INTO Players(user_login, email, password, donate_points, registration_dat
 		('Hoenic', 'fofiyannaje-7957@yopmail.com', '-927diQdOn', 22, '24/12/2022'); 
 GO
 
-SELECT * FROM Players
-GO
 
 CREATE TABLE Characters
 	(
@@ -127,7 +125,7 @@ CREATE TABLE Characters
 	Race varchar(10)  NOT NULL,
 	Last_login_date date NOT NULL,
 	registration_date date NOT NULL,
-	user_login varchar(20) REFERENCES Players(user_login) NOT NULL
+	user_login varchar(20) REFERENCES Players(user_login)
 	PRIMARY KEY(Nickname, user_login)
     );
 GO
@@ -157,12 +155,16 @@ WHERE user_login = 'Drew';
 GO
 
 
-
+Select * from plaYERS
+GO;
 
 UPDATE Players
-SET Email = 'newemail@yopmail.com'
-WHERE user_login = 'Drew';
+SET user_login = 'NewPlayer32'
+WHERE Email = 'breussoippauprusso-3159@yopmail.com'
 GO
+
+Select * from plaYERS
+GO;
 
 ALTER TABLE Players
 	DROP CONSTRAINT FK_Characters_UserLogin;
@@ -175,62 +177,50 @@ REFERENCES players(user_login)
 ON DELETE CASCADE;
 GO
 
+SELECT * from characters
+GO;
+
 --при удалении игрока будут автоматически удалены все его персонажи
 DELETE FROM Players
 WHERE user_login = 'Hoenic';
 GO
 
-
-
-UPDATE Characters
-SET In_game_balance = 100
-WHERE Nickname = 'Arian';
-GO
+SELECT * from characters
+GO;
 
 ALTER TABLE Characters
 	DROP CONSTRAINT FK_Characters_UserLogin;
 
 GO
-
-
 
 ALTER TABLE characters
 ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES Players(user_login)
-ON DELETE SET NULL;
-GO
-
---при удалении игрока поле user_login в таблице Players юудет ошибка из-за ограничения NOT NULL
-DELETE FROM Players
-WHERE user_login = 'Kathilla';
+ON UPDATE SET NULL;
 GO
 
 UPDATE Players
-SET Email = NULL
-WHERE user_login = 'Drew';
+SET user_login = NULL
+WHERE email = 'bropreibonnedda-5770@yopmail.com';
 GO
 
 ALTER TABLE Characters
 	DROP CONSTRAINT FK_Characters_UserLogin;
-
 GO
 
 ALTER TABLE Characters
 ADD CONSTRAINT FK_Characters_UserLogin
 FOREIGN KEY(user_login)
 REFERENCES Players(user_login)
-ON DELETE SET DEFAULT;
-GO
---при удалении игрока поле user_login в таблице Characters будет выводиться ошибка, так как значения по дефолту нету -> NULL, но ограничение NOT NULL
-DELETE FROM Players
-WHERE user_login = 'Kathilla';
+ON UPDATE SET DEFAULT;
 GO
 
 UPDATE Players
-SET Donate_points = DEFAULT
-WHERE user_login = 'Drew';
+SET user_login = DEFAULT
+WHERE email = 'leiyauhefraku-4167@yopmail.com';
 GO
+
 
 
 

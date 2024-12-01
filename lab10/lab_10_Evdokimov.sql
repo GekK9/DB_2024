@@ -1,107 +1,96 @@
 
---Для правильной работы запускать QUERY1 и QUERY2 одновременно с помощью ДВУХ отдельных запросов
-
 QUERY1:
-if OBJECT_ID('dbo.cardholders') is not null
-    drop table dbo.cardholders
-go
-create table dbo.cardholders 
-(
-	id			int,
-	name		varchar(35),
-	cardtype	varchar(35),
-	balance		money,
 
-	PRIMARY KEY (id)
+if OBJECT_ID('dbo.products') is not null
+    drop table dbo.products;
+go
+
+create table dbo.products
+(
+    id int,
+    name varchar(50),
+    category varchar(50),
+    quantity int,
+    price int,
+    PRIMARY KEY (id)
 );
 go
 
-insert into dbo.cardholders values
-	(1, 'Artem', 'Mir', 43444),
-	(2, 'Kirill', 'Mastercard', 52222),
-	(3, 'Denis', 'VISA', 633252)
+insert into dbo.products (id, name, category, quantity, price) values
+    (1, 'Milk', 'Milk Products', 100, 10.99),
+    (2, 'Water', 'drink', 50, 20.99),
+    (3, 'Cheese', 'Milk Products', 200, 5.49);
 go
 
---uncommited
+--===========================================
+-- READ UNCOMMITTED (грязное чтение)
+-- Чтение данных, даже если они изменены в незавершённой транзакции
+--===========================================
 
-begin transaction
+begin transaction;
+select * from dbo.products; 
+update dbo.products 
+    set quantity = 80 
+    where id = 1; 
+waitfor delay '00:00:05'; 
+select * from dbo.products;
+commit;
 
-	select * from dbo.cardholders
-	update dbo.cardholders 
-		set balance = 90 
-		where id = 1
-	waitfor delay '00:00:05'
-	select * from dbo.cardholders
-commit
-GO
---read commited
+-- ===========================================
+-- READ COMMITTED (подтвержденное чтение)
+-- Чтение только тех данных, которые были зафиксированы
+-- Изменения в данных после чтения могут быть видны
+-- ===========================================
 
-begin transaction
-	select * from dbo.cardholders
-	update dbo.cardholders 
-		set balance = 90 
-		where id = 1
-	waitfor delay '00:00:05'
+begin transaction;
+select * from dbo.products;
+update dbo.products 
+    set quantity = 70 
+    where id = 2;
+waitfor delay '00:00:05';
+select * from dbo.products;
+commit;
 
-	
-	select * from dbo.cardholders
-commit
-GO
+-- ===========================================
+-- REPEATABLE READ (повторяемое чтение)
+-- Повторное чтение данных в транзакции не изменяет их, но новые строки могут быть вставлены
+-- ===========================================
 
--- REPEATABLE 
+set transaction isolation level repeatable read;
+begin transaction;
+select * from dbo.products where category = 'Milk Products';
+waitfor delay '00:00:05';
+select * from dbo.products where category = 'Milk Products';
+rollback;
 
-set transaction isolation level 
-	repeatable read
-begin transaction
-	select * from dbo.cardholders
-	waitfor delay '00:00:05'
-	select * from dbo.cardholders
+-- ===========================================
+-- SERIALIZABLE (сериализуемость)
+-- Гарантирует, что другие транзакции не могут изменять или вставлять данные, которые 
+-- могут быть считаны текущей транзакцией
+-- ===========================================
 
-	rollback
-select * from dbo.cardholders
-GO
+set transaction isolation level serializable;
+begin transaction;
+select * from dbo.products where category = 'Milk Products';
+waitfor delay '00:00:05';
+select * from dbo.products where category = 'Milk Products';
+rollback;
 
--- serializable
-
-set transaction isolation level 
-	serializable
-begin transaction
-	select * from dbo.cardholders where id in (1,2)
-	waitfor delay '00:00:05'
-	select * from dbo.cardholders where id in (1,2)
-
-	rollback
-select * from dbo.cardholders
-GO
-
-GO
 
 QUERY2:
 
---READ UNCOMMITED
 
-set transaction isolation level 
-	read uncommitted
-select * from dbo.cardholders
-GO
+-- READ UNCOMMITTED
+set transaction isolation level read uncommitted;
+select * from dbo.products;
 
+-- READ COMMITTED
+set transaction isolation level read committed;
+select * from dbo.products;
 
-----READ COMMITED
+-- REPEATABLE READ
+update dbo.products set quantity = 90 where id = 3;
+insert into dbo.products (id, name, category, quantity, price) values (4, 'Egg', 'Eggs', 150, 12.99);
 
-set transaction isolation level 
-	read committed
-select * from dbo.cardholders
-GO
-
-
-----REPEATABLE READ
-
-update dbo.cardholders set balance = 90 where id = 3
-insert into dbo.cardholders values (9, 'Dasha', 'Visa', 1241442)
-GO
-
-
-----SERIALIZABLE
-
-insert into dbo.cardholders values (13, 'Iongliang', 'UnionPay', 4356456456)
-GO
+-- SERIALIZABLE
+update dbo.products set quantity = 60 where id = 2;

@@ -105,7 +105,10 @@ CREATE INDEX PlayersPasswords_INDX
     ON Donaters(user_login)
     INCLUDE (Password);
 GO
- 
+
+Select Password from donaters
+where user_login = 'Drew'
+GO
  
 --4.Создать индексированное представление.
 
@@ -126,6 +129,9 @@ CREATE UNIQUE CLUSTERED INDEX Donaters_INDX
     on Donaters_INDX_VIEW(user_login, email, Donate_points);
 GO
 
+CREATE UNIQUE nonCLUSTERED INDEX Donaters_INDX2
+    on Donaters_INDX_VIEW(email);
+GO
 
 SELECT * FROM Donaters_INDX_VIEW;
 GO

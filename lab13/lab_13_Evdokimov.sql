@@ -19,32 +19,33 @@ go
 --2.Создать в базах данных п.1. горизонтально фрагментированные таблицы.
 use lab13_1;
 go
-if OBJECT_ID(N'dbo.products', N'U') is not null
-    drop table dbo.products;
+if OBJECT_ID(N'dbo.characters', N'U') is not null
+    drop table dbo.characters;
 go
-create table dbo.products (
-	item_number	int  not null,
-	name_of_product  varchar(254),
-    price money,
-	PRIMARY KEY (item_number),
-	CONSTRAINT CHK_products_item_number
-                CHECK (item_number <= 5)
+create table dbo.characters (
+	id_character int  PRIMARY KEY,
+	Nickname varchar(50) NOT NULL,
+	In_game_balance int NOT NULL,
+	Race varchar(10)  NOT NULL,
+	CONSTRAINT CHK_id_characters
+                CHECK (id_character <= 5)
     );
 go
 
 
 use lab13_2;
 go
-if OBJECT_ID(N'dbo.products', N'U') is not null
-    drop table dbo.products;
+if OBJECT_ID(N'dbo.characters', N'U') is not null
+    drop table dbo.characters;
 go
-create table dbo.products (
-	item_number	int  not null,
-   name_of_product   varchar(254),
-    price money,
-	PRIMARY KEY (item_number),
-	CONSTRAINT CHK_products_item_number
-                CHECK (item_number > 5)
+create table dbo.characters (
+	id_character int  PRIMARY KEY,
+	Nickname varchar(50) NOT NULL,
+	In_game_balance int NOT NULL,
+	Race varchar(10)  NOT NULL,
+
+	CONSTRAINT CHK_id_characters
+                CHECK (id_character > 5)
     );
 go
 
@@ -58,28 +59,41 @@ if OBJECT_ID(N'horizontal_dist_v', N'V') is not null
 	drop view horizontal_dist_v;
 go
 create view horizontal_dist_v as
-	select * from lab13_1.dbo.products
+	select * from lab13_1.dbo.characters
 	union all					
-	select * from lab13_2.dbo.products
+	select * from lab13_2.dbo.characters
 go
 
 
 
 insert horizontal_dist_v values
-	(1, 'Milk', 60),
-	(2, 'Сheese', 100),
-	(3, 'Chocolate', 70),
-	(6, 'Bread', 40),
-	(10, 'Potato', 20);
+		(1,'Uetreyn', 236236326, 'Elf'),
+		(2,'Blffiton', 2345 , 'Orc'),
+		(3,'Arian', 622637 , 'Human'),
+		(4,'Zani', 3245867, 'Ogre'),
+		(5,'Oning', 854 , 'Treant'),
+		(6,'Lien', 78645123 , 'Human'),
+		(7,'Koshanerg', 255645198 , 'Ogre'),
+		(8,'Ghim', 8451 , 'Orc'),
+		(9,'Gralillo', 12554 , 'ELf'),
+		(10,'Ullanchen', 0 , 'Human'),
+		(11,'Zani', 3245867, 'Ogre'); 
+GO
+
+
+update  horizontal_dist_v
+set id_character = 104 
+where id_character = 4
+go
 
 select * from horizontal_dist_v
 
 update horizontal_dist_v
-	set name_of_product = 'milk 3.5%'
-	where item_number = 1
+	set In_game_balance = '11111'
+	where id_character = 1
 
 delete horizontal_dist_v
-	where name_of_product = 'potato'
+	where Nickname = 'Ghim'
 
-select * from lab13_1.dbo.products;
-select * from lab13_2.dbo.products;
+select * from lab13_1.dbo.characters;
+select * from lab13_2.dbo.characters;
