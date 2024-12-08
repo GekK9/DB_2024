@@ -20,18 +20,9 @@ IF OBJECT_ID(N'Players') is NOT NULL
 	DROP TABLE Players;
 GO
 
-IF OBJECT_ID('PlayersSequence') IS NOT NULL
-    DROP SEQUENCE PlayersSequence;
-GO
-
-CREATE SEQUENCE PlayersSequence
-    START WITH 200003
-    INCREMENT BY 738;
-GO
 
 CREATE TABLE Players
 	(
-	PlayerID int DEFAULT (NEXT VALUE FOR PlayersSequence) UNIQUE,
 	user_login varchar(20) PRIMARY KEY NOT NULL,
 	Email  varchar(254) NOT NULL,
 	Password varchar(30) NOT NULL,
@@ -126,7 +117,7 @@ AS
     EXEC dbo.sub_proc @curs = @ext_curs OUTPUT;
  
     FETCH NEXT FROM @ext_curs INTO @t_user_login, @t_email, @t_age;
-    PRINT 'First Fetch: "' + @t_user_login + ' | ' + @t_email + ' ||| ' +  CAST(@t_age AS VARCHAR) + '"'
+    PRINT 'First Fetch: "' + @t_user_login + ' | ' + @t_email + ' | ' +  CAST(@t_age AS VARCHAR) + '"'
 	PRINT '      Players:';
 	PRINT '-----------------------------'
     WHILE (@@FETCH_STATUS = 0)

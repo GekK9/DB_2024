@@ -1,186 +1,171 @@
+--use master
+--go
+
+--IF DB_ID(N'la11') IS NOT NULL
+--	DROP DATABASE lab11;
+--GO
+
+--CREATE DATABASE lab11
+--ON (NAME = lab11_dat, FILENAME = "C:\BD\lab11\lab11dat.mdf",
+--		SIZE = 10, MAXSIZE = UNLIMITED, FILEGROWTH = 5%)
+--	LOG ON (NAME = lab11_log, FILENAME = "C:\BD\lab11\lab11log.ldf",
+--		SIZE = 5MB, MAXSIZE = 25MB, FILEGROWTH = 5MB); 
+--GO
+
 SET NOCOUNT ON;
 USE Lab11;
 GO
 
-IF OBJECT_ID(N'Ordered_product') is NOT NULL
-	DROP TABLE Ordered_product;
+IF OBJECT_ID(N'matches') is NOT NULL
+	DROP TABLE matches;
 GO
 
-IF OBJECT_ID(N'Orders') is NOT NULL
-	DROP TABLE Orders;
+IF OBJECT_ID(N'maps') is NOT NULL
+	DROP TABLE maps;
 GO
 
-IF OBJECT_ID(N'Product') is NOT NULL
-	DROP TABLE Product;
-GO
-
-IF OBJECT_ID(N'Supplier') is NOT NULL
-	DROP TABLE Supplier;
-GO
-
-IF OBJECT_ID(N'Shop') is NOT NULL
-	DROP TABLE Shop;
-GO
-
-IF OBJECT_ID(N'Clients') is NOT NULL
-	DROP TABLE Clients;
-GO
-
-CREATE TABLE Clients (
-	Client_code INT IDENTITY(1, 1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL,
-	Address VARCHAR(100) DEFAULT 'Unknown',
-	Phone_number CHAR(11) NOT NULL UNIQUE,
-		CHECK (LEN(Phone_number) = 11)
-)
-GO
-
-INSERT INTO  Clients(Name, Address, Phone_number)
-   VALUES 
-	('Artem', '294060, Тульская область, город Зарайск, бульвар Ленина, 71', 89502422455),
-	('Yan', '783595, Волгоградская область, город Раменское, въезд Косиора, 40', 89083528814),
-	('Nastya', '336490, Читинская область, город Мытищи, шоссе Гагарина, 79', 89663241425),
-	('Anton','296543, Самарская область, город Солнечногорск, шоссе Чехова, 84', 89856759952),
-	('Ekaterina','574925, Волгоградская область, город Лотошино, спуск Бухарестская, 04', 89889350352),
-	('Anton', '919966, Оренбургская область, город Серебряные Пруды, пр. Космонавтов, 21', 89501222500);
-
-GO
-
-CREATE TABLE Shop (
-	Company_code INT NOT NULL PRIMARY KEY,
-	Company_name VARCHAR(50) NOT NULL,
-	Address VARCHAR(100) NOT NULL,
-	Shop_email VARCHAR(254) NOT NULL,
-	Contact_number CHAR(11) NOT NULL,
-)
-GO
-
-INSERT INTO  Shop(Company_code, Company_name, Address, Shop_email, Contact_number)
-   VALUES 
-	(34634346,'OOO ОПТ ПРОДУКТЫ СПБ', '294060, Ленинградская область, город Санкт-Петербург, бульвар Ленина, 71','Opt_Products@opt.ru', '89633422455')
-GO
-
-CREATE TABLE Supplier (
-	Supplier_code INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
-	Address VARCHAR(100) NOT NULL,
-	Phone CHAR(11) NOT NULL UNIQUE,
-		CHECK (LEN(Phone) = 11),
-)
-GO
-
-INSERT INTO  Supplier(Address, Phone)
-   VALUES 
-	('641533, Орловская область, город Можайск, бульвар Домодедовская, 23','89152052653'),
-	('350334, Волгоградская область, город Балашиха, шоссе Сталина, 79','89820152345'),
-	('241983, Читинская область, город Люберцы, въезд Гоголя, 43','89872526828'),
-	('466485, Магаданская область, город Волоколамск, пл. Ленина, 39','89876578877'),
-	('463061, Иркутская область, город Луховицы, пл. Ладыгина, 63','89512481411'),
-	('250211, Ярославская область, город Мытищи, проезд Ленина, 11','89242621734')
-GO
-
-CREATE TABLE Product (
-	Item_Number INT NOT NULL PRIMARY KEY,
-	Name_of_product VARCHAR(50) NOT NULL,
-	Price money NOT NULL,
-		CHECK (price > 0),
-	Supplier_code INT FOREIGN KEY REFERENCES Supplier(Supplier_code) ON DELETE CASCADE,
-)
-GO
-INSERT Product VALUES
-	(235, 'Milk', 60, 1),
-	(124, 'Сheese', 100, 1),
-	(373, 'Chocolate', 70, 2),
-	(6262, 'Bread', 40, 3),
-	(2626, 'Potato', 20, 4),
-	(5252, 'Eggs', 120, 6),
-	(23425, 'Bananas', 140, 5);
-
+IF OBJECT_ID(N'characters') is NOT NULL
+	DROP TABLE characters;
 GO
 
 
-CREATE TABLE Orders (
-	Number_of_order INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
-	Date_of_order date NOT NULL ,
-		CONSTRAINT CHK_Date_of_order
-		CHECK (Date_of_order > CONVERT(DATETIME, '1/1/1990', 103)),
-	Price_of_order money,
-	status NVARCHAR(20) DEFAULT 'Обрабатывается' NOT NULL,
-		CHECK (Status IN('Обрабатывается','Обработан', 'Доставка', 'Выполнен')),
-	Client_code INT FOREIGN KEY REFERENCES Clients(Client_code) ON DELETE NO ACTION,
-	Company_code INT FOREIGN KEY REFERENCES Shop(Company_code) ON DELETE NO ACTION DEFAULT 34634346,
-)
+
+IF OBJECT_ID(N'Players') is NOT NULL
+	DROP TABLE players;
 GO
 
 
-INSERT Orders (date_of_order, status, client_Code)
+
+
+
+
+
+
+CREATE TABLE Players
+	(
+	user_login varchar(20) PRIMARY KEY NOT NULL,
+	Email  varchar(254) NOT NULL,
+	Password varchar(30) NOT NULL,
+	Donate_points int NOT NULL,
+	registration_date date NOT NULL,
+	CONSTRAINT CHK_registration_date
+		CHECK (registration_date > CONVERT(DATE, '1/1/1990', 103)),
+	);
+GO
+
+INSERT INTO Players(user_login, email, password, donate_points, registration_date)
 	VALUES
-		(GETDATE(), 'Обрабатывается', 3),
-		('14/02/2023', 'Выполнен', 3),
-		('18/07/2023', 'Выполнен', 2),
-		('17/12/2023', 'Доставка', 1),
-		('18/12/2023', 'Обработан', 4)
+		('Drew', 'breussoippauprusso-3159@yahoo.com', '-Hxe9ddAE8', 51, '12/07/2023'),
+		('Kathilla', 'leiyauhefraku-4167@gmail.com', '-26eY_2bxX5', 0, '8/02/2023'),
+		('Uesdemus', 'bropreibonnedda-5770@yopmail.com', '-Ed8eORDn1', 9876, '30/09/2021'),
+		('Hoenic', 'fofiyannaje-7957@yopmail.com', '-927diQdOn', 22, '24/12/2022'); 
 GO
 
 
-CREATE TABLE Ordered_product (
-	Number_of_order INT REFERENCES Orders(number_of_order) ON DELETE CASCADE,
-	Item_number INT REFERENCES Product(Item_number),
-	Volume INT NOT NULL,
-	Total_price money NOT NULL DEFAULT 0,
-	PRIMARY KEY(number_of_order, Item_number)
-)
+CREATE TABLE Characters
+	(
+	Nickname varchar(45) NOT NULL PRIMARY KEY,
+	In_game_balance int NOT NULL,
+	Race varchar(10)  NOT NULL,
+	Last_login_date date NOT NULL,
+	registration_date date NOT NULL,
+	user_login varchar(20) REFERENCES Players(user_login)
+    );
 GO
 
-INSERT Ordered_product (number_of_order, Item_number, Volume)
+INSERT INTO Characters(Nickname, in_game_balance, race, Last_login_date, registration_date, user_login)
 	VALUES
-		(4, 235, 4),
-		(4, 6262, 1),
-		(3, 235, 3),
-		(3, 6262, 3),
-		(3, 2626, 2),
-		(1, 235, 1),
-		(1, 373, 3),
-		(2, 124, 7),
-		(2, 235, 12),
-		(5, 124, 6),
-		(5,6262, 1)
+		('Uetreyn', 236236326, 'Elf', '12/07/2023','12/07/2023','Drew'),
+		('gagae', 3465, 'Elf', '12/07/2023','12/07/2023','Drew'),
+		('Blffiton', 2345 , 'Orc','8/02/2023','12/07/2023','Drew'),
+		('Arian', 622637 , 'Human','30/09/2021','12/07/2023','Kathilla'),
+		('Zani', 3245867, 'Ogre','24/12/2022','12/07/2023','Hoenic'); 
 GO
 
-IF OBJECT_ID(N'Update_price_of_order_if_ordered_product_deleted') is NOT NULL
-	DROP TRIGGER Update_price_of_order_if_ordered_product_deleted;
+
+CREATE TABLE Maps 
+	(
+	Map_code Int IDENTITY(1,1) PRIMARY KEY ,
+	Map_name VARCHAR(40) NOT NULL UNIQUE,
+	);
 GO
 
-CREATE TRIGGER Update_price_of_order_if_ordered_product_deleted
-ON Ordered_product
-FOR DELETE
+INSERT INTO Maps(map_name)
+	VALUES ('ChinaTown'),
+	('The Great Bridge'),
+	('TheDarkTown');
+GO
+
+CREATE TABLE Matches
+(
+	Match_code uniqueidentifier ROWGUIDCOL DEFAULT (newid()) PRIMARY KEY NOT NULL,
+	Maps varchar(40) REFERENCES Maps(map_name) NOT NULL,
+	Match_duration time NOT NULL,
+	Game_mode varchar(15) NOT NULL,
+	_Date date DEFAULT getdate() NOT NULL,
+	CONSTRAINT CHK_Date
+		CHECK (_Date > CONVERT(DATE, '1/1/1990', 103)),
+	Result varchar(10) NOT NULL,
+	Balance_change int NOT NULL,
+	nickname varchar(45) REFERENCES Characters(nickname) NOT NULL
+	);
+GO
+
+INSERT INTO Matches(maps, Match_duration, Game_mode, _Date, Result, Balance_change, nickname)
+	VALUES 
+	('The Great Bridge','00:09:52', 'Быстрый', '22/11/2023', 'Победа', +4255, 'Arian'),
+	('ChinaTown','00:14:11', 'Рейтинговый', default, 'Поражение', -8765, 'Zani');
+GO
+
+
+IF OBJECT_ID(N'New_balance_after_match') is NOT NULL
+	DROP TRIGGER New_balance_after_match;
+GO
+
+CREATE TRIGGER New_balance_after_match
+ON matches
+FOR INSERT
 AS 
-	UPDATE Orders 
-	SET Price_of_order = summedValue
-	FROM Orders
+	UPDATE Characters 
+	SET In_game_balance = In_game_balance + summedvalue
+	FROM Characters
 	JOIN (
-		SELECT SUM(Total_price) as summedvalue, Number_of_order AS NumOrd
-		FROM Ordered_product GROUP BY Number_of_order
-		) s on Orders.Number_of_order = NumOrd
+		SELECT SUM(Balance_change) as summedvalue, Nickname AS Name
+		FROM Matches GROUP BY Nickname
+		) s on characters.nickname = Name
 GO
 
+select * FROM matches
 
-
-
-UPDATE Ordered_product
-	SET Total_price = product.price * Volume
-	FROM Product
-	WHERE Product.Item_number = Ordered_product.Item_Number
+SELECT * FROM PLAYERS
 GO
 
-IF OBJECT_ID(N'Have_Orders') is NOT NULL 
-    DROP FUNCTION Have_Orders
+SELECT * FROM MAPS
+GO
+SELECT * FROM Characters
+GO;
+
+INSERT INTO MATCHES(maps, Match_duration, Game_mode, _Date, Result, Balance_change, nickname)
+Values ('The Great Bridge','00:05:32', 'Быстрый', '22/11/2023', 'Победа', -1, 'Zani'),
+('TheDarkTown','00:43:12', 'Быстрый', '22/11/2023', 'Ничья', 0, 'Arian'),
+('The Great Bridge','00:45:21', 'Быстрый', '22/11/2023', 'Победа', -1, 'Zani'),
+('The Great Bridge','00:10:44', 'Быстрый', '22/11/2023', 'Победа', -1, 'Zani');
 GO
 
-CREATE FUNCTION Have_Orders(@ClientCode INT)
+SELECT * FROM MATCHES
+GO
+SELECT * FROM Characters
+GO;
+
+IF OBJECT_ID(N'Have_character') is NOT NULL 
+    DROP FUNCTION Have_character
+GO
+
+CREATE FUNCTION Have_character(@user_login varchar(45))
     RETURNS INT
     BEGIN
 		DECLARE @result TINYINT;
-        IF EXISTS (SELECT 1 FROM Orders WHERE Orders.Client_code = @ClientCode)
+        IF EXISTS (SELECT 1 FROM Characters WHERE Characters.user_login = @user_login)
 			SET @result = 1;
 		ELSE
 			SET @result = 0;
@@ -190,227 +175,172 @@ CREATE FUNCTION Have_Orders(@ClientCode INT)
     END
 GO
 
-
-UPDATE Orders 
-	SET Price_of_order = summedValue
-	FROM Orders
-	INNER JOIN (
-		SELECT SUM(Total_price) as summedvalue, Number_of_order AS NumOrd
-		FROM Ordered_product GROUP BY Number_of_order
-		) s on Orders.Number_of_order = NumOrd
+ALTER TABLE Players 
+	ADD  have_character TINYINT;
 GO
 
 
 
-ALTER TABLE Clients 
-	ADD  have_orders TINYINT;
+UPDATE Players
+	SET have_character  = [dbo].have_character(user_login)
 GO
 
-UPDATE Clients
-	SET have_orders  = [dbo].Have_Orders(Client_code)
+SELECT * FROM PLAYERS
 GO
 
-SELECT * FROM Clients;
+IF OBJECT_ID(N'PlayersWithcharacters') is NOT NULL
+	DROP PROCEDURE PlayersWithcharacters;
 GO
 
-IF OBJECT_ID(N'ClientsWithOrders') is NOT NULL
-	DROP PROCEDURE ClientsWithOrders;
-GO
-
-CREATE PROCEDURE ClientsWithOrders
+CREATE PROCEDURE PlayersWithcharacters
 AS
     SET NOCOUNT ON;
     SELECT *
-    FROM Clients
-	WHERE have_orders = 1;
+    FROM Players
+	WHERE have_character = 1;
 GO
 
-EXEC ClientsWithOrders;
+EXEC PlayersWithcharacters;
 
-SELECT * FROM Orders
-ORDER BY Price_of_order;
+SELECT * FROM Characters
+ORDER BY In_game_balance;
 GO
 
-SELECT * FROM Ordered_product;
-GO	
-
-SELECT * FROM Orders;
-GO
 
 IF EXISTS (SELECT NAME FROM sys.indexes 
-            WHERE NAME = N'ClientsAddresses_INDX')
-	DROP INDEX ClientsAddresses_INDX on Clients;
+            WHERE NAME = N'PlayersPasswords_INDX')
+	DROP INDEX PlayersPasswords_INDX on Players;
 GO
 
-CREATE INDEX ClientsAddresses_INDX
-    ON Clients(Client_code)
-    INCLUDE (Address);
+CREATE INDEX PlayersPasswords_INDX
+    ON Players(user_login)
+    INCLUDE (Password);
 GO
 
 
-DELETE FROM Ordered_product
-	WHERE Number_of_order = 1 AND Item_number = 235
+DELETE FROM Characters
+	WHERE user_login ='drew'  AND race = 'orc'
 GO
 
-SELECT * FROM Product;
-GO
-
-SELECT * FROM Orders;
+SELECT * FROM Characters;
 GO
 
 SELECT * 
-FROM Orders
-WHERE Price_of_order BETWEEN 600 AND 1500;
+FROM Players
+WHERE Donate_points BETWEEN 0 AND 30;
 GO
 
-SELECT * FROM Clients
-WHERE Address LIKE '%Волгоградская%'
+SELECT * FROM Players
+WHERE email LIKE '%@yopmail.com%'
 GO
 
-SELECT c.Client_code, C.name, c.Phone_number
-FROM Clients AS C  
+SELECT P.User_login, p.email, p.password
+FROM players AS p 
 WHERE EXISTS  
 (SELECT *  
-    FROM Orders as o
-    WHERE c.Client_code = o.Client_code) ;  
+    FROM Characters as c
+    WHERE p.user_login = c.user_login) ;  
 GO  
 
 SELECT * 
-FROM Orders 
-WHERE status IN('Выполнен', 'Доставка');
+FROM Matches 
+WHERE Result IN('Ничья', 'Поражение');
 GO
 
-SELECT * FROM Ordered_product;
-GO	
-
-
-SELECT DISTINCT Name_of_product AS 'Наименование', Ordered_product.Item_number AS 'Артикль', Price AS 'Цена'
-	FROM Ordered_product
-		FULL OUTER JOIN Product
-		ON Product.Item_number = Ordered_product.Item_number
+SELECT *
+	FROM Characters
+	  FULL outer join Matches
+		ON Matches.nickname = Characters.nickname
 GO
 
 SELECT  *
-	FROM Ordered_product
-		FULL OUTER JOIN Product
-		ON Product.Item_number = Ordered_product.Item_number
-		ORDER BY total_price ASC
+	FROM Characters
+		FULL OUTER JOIN Matches
+	ON Matches.nickname = Characters.nickname
+	ORDER BY Balance_change ASC
 GO
 
-SELECT *
-	FROM Ordered_product
-		LEFT OUTER JOIN Product
-		ON Product.Item_number = Ordered_product.Item_number
-		ORDER BY total_price DESC
+SELECT  *
+	FROM Characters
+		LEFT OUTER JOIN Matches
+	ON Matches.nickname = Characters.nickname
+	ORDER BY Balance_change DESC
 GO
 
-SELECT *
-	FROM Ordered_product
-		RIGHT OUTER JOIN Product
-		ON Product.Item_number = Ordered_product.Item_number
-		WHERE Number_of_order is NULL
-GO
-
-
-
-
-IF OBJECT_ID(N'ViewClients') is NOT NULL
-	DROP VIEW ViewClients;
-GO
-
-CREATE VIEW ViewClients AS
-    SELECT Client_code AS 'Код клиента', 
-           name AS 'Имя клиента',
-           CONCAT(SUBSTRING(address, 1, 2), '*****', SUBSTRING(address, LEN(Address) - 7, LEN(address))) AS 'Адрес',
-		   CONCAT(SUBSTRING(Phone_number, 1, 3), '*****', SUBSTRING(Phone_number, LEN(Phone_number) - 2, LEN(Phone_number))) AS 'Номер телефона'
-FROM Clients;
-GO
-
-SELECT * FROM ViewClients;
-GO
-
-SELECT * FROM Orders;
-GO
-
-SELECT Client_code, SUM(Price_of_order) AS 'Сумма покупок' FROM orders
-GROUP BY client_code
-HAVING sum(Price_of_order) > 400
-ORDER BY 'Сумма покупок'
-GO
-
-SELECT item_number, MAX(volume) FROM Ordered_product
-GROUP BY Item_number;
-GO
-
-SELECT item_number, MIN(volume) FROM Ordered_product
-GROUP BY Item_number;
+SELECT  *
+	FROM Characters
+		right OUTER JOIN Matches
+	ON Matches.nickname = Characters.nickname
+		WHERE Matches.nickname is NULL
 GO
 
 
-SELECT item_number, AVG(total_price) from Ordered_product
-GROUP BY Item_number;
+
+
+IF OBJECT_ID(N'ViewPlayers') is NOT NULL
+	DROP VIEW ViewPlayers;
 GO
 
-SELECT item_number, COUNT(*) from Ordered_product
-GROUP BY Item_number;
+CREATE VIEW ViewPlayers AS
+    SELECT User_login AS 'Логин', 
+           CONCAT(SUBSTRING(email, 1, 2), '*****', SUBSTRING(email, LEN(email) - 7, LEN(email))) AS 'Почта',
+		   CONCAT(SUBSTRING(Password, 1, 3), '*****', SUBSTRING(Password, LEN(Password) - 2, LEN(Password))) AS 'Номер Пароль'
+FROM Players;
 GO
 
-SELECT Name FROM Clients
+SELECT * FROM ViewPlayers;
+GO
+
+SELECT Nickname, SUM(In_game_balance) AS 'Баланс всех персонажей' FROM Characters
+GROUP BY Nickname
+HAVING sum(In_game_balance) > 62689
+ORDER BY 'Баланс всех персонажей'
+GO
+
+SELECT user_login, MAX(In_game_balance) FROM Characters
+GROUP BY user_login;
+GO
+
+SELECT user_login, MIN(In_game_balance) FROM Characters
+GROUP BY user_login;
+GO
+
+SELECT nickname, AVG(Balance_change) from Matches
+GROUP BY nickname;
+GO
+
+SELECT user_login, COUNT(*) AS 'Кол-во персонажей' from Characters
+GROUP BY user_login;
+GO
+
+SELECT user_login FROM Players
 UNION ALL
-SELECT Name_of_product FROM Product
+SELECT Nickname FROM Characters
 GO
 
-SELECT Name FROM Clients
+SELECT user_login FROM Players
 UNION
-SELECT Name_of_product FROM Product
+SELECT Nickname FROM Characters
 GO
 
-SELECT Name FROM Clients
-INTERSECT
-SELECT Name_of_product FROM Product
+SELECT user_login FROM Players
+INTERSECT 
+SELECT Nickname FROM Characters
 GO
 
-SELECT Name FROM Clients
+SELECT user_login FROM Players
 EXCEPT
-SELECT Name_of_product FROM Product
+SELECT Nickname FROM Characters
 GO
 
-SELECT Name, client_code,
-	(SELECT SUM(Price_of_order) AS 'Сумма покупок' FROM orders AS o
-GROUP BY client_code 
-HAVING c.Client_code = o.client_code)
-FROM Clients AS C
+SELECT USER_login, email,
+	(SELECT COUNT(*) AS 'Кол-во персонажей' FROM Characters AS o
+GROUP BY user_login 
+HAVING c.user_login = o.user_login)
+FROM Players AS C
 
 GO
 
-IF OBJECT_ID(N'New_and_Old_Clients') is NOT NULL
-	DROP TABLE New_and_Old_Clients;
-GO
 
-CREATE TABLE New_and_Old_Clients
-	(
-		Client_code INT IDENTITY(1, 1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL,
-	Address VARCHAR(100) DEFAULT 'Unknown',
-	Phone_number CHAR(11) NOT NULL UNIQUE,
-		CHECK (LEN(Phone_number) = 11),
-	);
-GO
-
-INSERT INTO  New_and_Old_Clients(Name, Address, Phone_number)
-   VALUES 
-	('Arut', '257980, Пензенская область, город Раменское, спуск Гоголя, 40', 89059145732),
-	('Kirill','689435, Астраханская область, город Дмитров, бульвар Ломоносова, 14', 89867425722),
-	('Sergei', '475207, Сахалинская область, город Шатура, пл. Ломоносова, 46', 89852645222),
-	('Milana','560643, Ростовская область, город Ногинск, наб. Сталина, 27', 89087458824),
-	('Oksana','482782, Липецкая область, город Видное, наб. Балканская, 95', 89025678824)
-GO
-
-INSERT INTO New_and_Old_Clients(name, address, phone_number)
-	SELECT name, address, phone_number FROM Clients		
-GO
-
-SELECT * FROM New_and_Old_Clients;
-GO
 
 
