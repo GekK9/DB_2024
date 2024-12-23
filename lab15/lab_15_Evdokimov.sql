@@ -47,16 +47,18 @@ CREATE TRIGGER PlayersUpd
 ON Players
 INSTEAD OF UPDATE AS
 BEGIN
-	IF UPDATE(user_login)
-	BEGIN
-		RAISERROR('[UPD TRIGGER]: user_login cant upd', 15, -1);
-	END
-		IF UPDATE(email)
-		BEGIN
+	
+		IF UPDATE(user_login)
+    BEGIN
+        RAISERROR('[UPD TRIGGER]: "user_login" can''t be modified', 16, 1);
+        RETURN;
+    END
+		
 			UPDATE Players
-			SET email = (SELECT email FROM inserted WHERE inserted.user_login = Players.user_login)
+			SET email = (SELECT email FROM inserted WHERE inserted.user_login = Players.user_login),
+			status = (SELECT status FROM inserted WHERE inserted.user_login = Players.user_login)
 			WHERE user_login = (SELECT user_login FROM inserted WHERE inserted.user_login = Players.user_login);
-		END
+		
 	END;
 GO
 
@@ -99,36 +101,20 @@ INSERT INTO Characters(Nickname, in_game_balance, race, user_login)
 		('Lien', 78645123 , 'Human','Uesdemus'),
 		('Koshanerg', 255645198 , 'Ogre','Uesdemus'),
 		('Ghim', 8451 , 'Orc','Uesdemus'),
-		('Gralillo', 12554 , 'ELf','Kathilla'),
+		('Gralillo', 12554 , 'Elf','Kathilla'),
 		('Ullanchen', 0 , 'Human','agoonViper'),
 		('Zani', 3245867, 'Ogre','Hoenic'); 
 GO
 
 CREATE TRIGGER CharactersIns
     ON Characters
-    INSTEAD OF INSERT AS
+    after INSERT AS
 BEGIN
     IF EXISTS(SELECT Nickname FROM inserted WHERE inserted.Nickname IN (SELECT Nickname FROM [lab15_2].DBO.Characters))
 		BEGIN
             RAISERROR('[INS TRIGGER]: Characters is already available', 11, 1)
 		END
-	ELSE BEGIN
-			IF EXISTS (SELECT Nickname FROM inserted WHERE user_login NOT IN (SELECT user_login FROM [lab15_1].[dbo].Players))
-			BEGIN
-				RAISERROR('[INS TRIGGER]: first add Players', 11, 1)
-				END
-			ELSE 
-				BEGIN
-					INSERT INTO Characters
-						SELECT
-							i.Nickname,
-							i.In_game_balance,
-							i.race,
-							i.user_login
-							FROM inserted AS i
-		END	
-		END
-END
+end
 	
 GO
 
@@ -142,12 +128,18 @@ CREATE TRIGGER CharactersUpd
 	ON Characters
 INSTEAD OF UPDATE AS
 	BEGIN
-	 IF UPDATE(user_login)
-		RAISERROR('[UPD TRIGGER]: user_login cant upd', 15, -1)
-	 ELSE IF UPDATE(in_game_balance)
-		UPDATE Characters
-		Set In_game_balance = (select In_game_balance from inserted where inserted.user_login = user_login)
-										where user_login = (select user_login from inserted where inserted.user_login = user_login)
+
+	IF UPDATE(nickname)
+    BEGIN
+        RAISERROR('[UPD TRIGGER]: "nickname" can''t be modified', 16, 1);
+        RETURN;
+    END
+
+	 UPDATE Characters
+			set
+			in_game_balance = (select in_game_balance from inserted where inserted.Nickname = Characters.nickname),
+			race = (select race from inserted where inserted.Nickname = Characters.nickname)
+						where Characters.Nickname = (select Nickname from inserted where inserted.Nickname = Characters.Nickname)
 	END
 GO
 
@@ -189,25 +181,8 @@ UPDATE [Lab15_1].[DBO].Players
 		where user_login = 'agoonViper';
 GO
 
-UPDATE [Lab15_1].[DBO].Players
-	SET email = 'g345543@gmail.com', user_login = 'kitok'
-		where user_login = 'frrride';
-GO
 
-INSERT [LAB15_2].[DBO].Characters
-VALUES
-		('hiiir', 236236326, 'Elf','Drew')
-GO
 
-INSERT [LAB15_2].[DBO].Characters
-VALUES
-		('Uetreyn', 236236326, 'Orc','Drew')
-GO
-
-INSERT [LAB15_2].[DBO].Characters
-VALUES
-		('Uetreyn', 236236326, 'Elf','frrride')
-GO
 
 
 SELECT * FROM PlayersCharacters
